@@ -1,0 +1,43 @@
+vrf BT
+ address-family ipv4 unicast
+  import route-target
+      65000:55
+      65000:56
+     !
+  export route-target
+      65000:55
+      65000:56
+     !
+!
+
+interface GigabitEthernet0/0/0/6
+ vrf BT
+ ipv4 address 10.10.10.10 255.255.255.254
+ no shutdown
+!
+!
+
+route-policy PASS-ALL
+  pass
+end-policy
+!
+
+router bgp 65000
+ bgp router-id 10.10.20.36
+ address-family vpnv4 unicast
+ vrf BT
+  rd 10.10.20.36:52
+  address-family ipv4 unicast
+   redistribute connected
+  !
+  neighbor 10.10.10.11
+   remote-as 65532
+   password clear BE9jo+&6
+   address-family ipv4 unicast
+    route-policy PASS-ALL in
+    route-policy PASS-ALL out
+    as-override
+   !
+  !
+ !
+!
