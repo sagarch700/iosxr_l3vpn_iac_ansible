@@ -1,4 +1,4 @@
-vrf POLICE
+vrf BT
  address-family ipv4 unicast
   import route-target
       65000:55
@@ -11,7 +11,7 @@ vrf POLICE
 !
 
 interface GigabitEthernet0/0/0/5
- vrf POLICE
+ vrf BT
  ipv4 address 10.10.10.18 255.255.255.254
  no shutdown
 !
@@ -25,7 +25,7 @@ end-policy
 router bgp 65000
  bgp router-id 10.10.20.35
  address-family vpnv4 unicast
- vrf POLICE
+ vrf BT
   rd 10.10.20.35:52
   address-family ipv4 unicast
    redistribute connected
