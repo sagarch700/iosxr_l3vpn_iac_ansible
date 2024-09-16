@@ -1,0 +1,5 @@
+vrf_name: "POLICE"
+import_times: "2"
+export_times: "2"
+cust_as: "65532"
+bgp_password: "BE9jo+&6"

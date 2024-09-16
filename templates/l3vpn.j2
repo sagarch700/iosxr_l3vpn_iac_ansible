@@ -1,0 +1,45 @@
+vrf {{ vrf_name }}
+ address-family ipv4 unicast
+  import route-target
+   {% for val in range(import_times | int) %}
+   {{ bgp_asn | int }}:{{ (max_rt | int) + (val + 1) }}
+   {% endfor %}
+  !
+  export route-target
+   {% for val in range(export_times | int) %}
+   {{ bgp_asn | int }}:{{ (max_rt | int) + (val + 1) }}
+   {% endfor %}
+  !
+!
+
+interface {{ l3vpn_interface }}
+ vrf {{ vrf_name }}
+ ipv4 address {{ l3vpn_interface_ip }} {{ l3vpn_interface_mask }}
+ no shutdown
+!
+!
+
+route-policy PASS-ALL
+  pass
+end-policy
+!
+
+router bgp {{ bgp_asn }}
+ bgp router-id {{ rid }}
+ address-family vpnv4 unicast
+ vrf {{ vrf_name }}
+  rd {{ rid }}:{{ (max_rd | int) + 1}}
+  address-family ipv4 unicast
+   redistribute connected
+  !
+  neighbor {{ l3vpn_neighbor_ip }}
+   remote-as {{ cust_as | int }}
+   password clear {{ bgp_password }}
+   address-family ipv4 unicast
+    route-policy PASS-ALL in
+    route-policy PASS-ALL out
+    as-override
+   !
+  !
+ !
+!
