@@ -1,0 +1,11 @@
+---
+ansible_host: 10.10.20.35
+ansible_ssh_common_args: -o HostKeyAlgorithms=+ssh-dss
+rid: 10.10.20.35
+l3vpn_interface_mask: 255.255.255.254
+l3vpn_interface_ip: 10.10.10.18
+l3vpn_neighbor_ip: 10.10.10.19
+l3vpn_interface: GigabitEthernet0/0/0/5
+
+
+  
