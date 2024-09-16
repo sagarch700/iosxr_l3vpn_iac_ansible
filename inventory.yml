@@ -1,0 +1,25 @@
+---
+all:
+  children:
+    routers:
+      hosts:
+        router1:
+
+    switches:
+      hosts:
+        switch1:
+    
+    xerouters:
+      hosts:
+        cat8000v:
+
+    xrrouters:
+      hosts:
+        PE1:
+        PE2:
+        ref_node:
+
+    nxos:
+      hosts:
+        n9k:
+      

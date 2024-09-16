@@ -1,0 +1,37 @@
+---
+- name: "PLAY-1: Get the existing last used RT and last RD values for reference node"
+  hosts: ref_node
+  gather_facts: false
+  tasks:
+    - name: "TASK-1: get the last export rt value used"
+      cisco.iosxr.iosxr_command:
+        commands:
+          - sh vrf all | utility egrep "export" | utility sort | utility tail count 1 # this gives us the max rt value in use
+      register: export_rt
+      tags: l3vpn
+
+    - name: "TASK-2: get the last import rt value used"
+      cisco.iosxr.iosxr_command:
+        commands:
+          - sh vrf all | utility egrep "import" | utility sort | utility tail count 1  # this gives us the max rt value in use
+      register: import_rt
+      tags: l3vpn
+
+    - name: "TASK-3: get the existing rd details"
+      cisco.iosxr.iosxr_command:
+        commands:
+          - sh running-config | utility egrep " +rd"
+      register: rd_output
+      tags: l3vpn
+
+    - name: "TASK-4: Using Custom filter.py to get the last rd, rt values used and store in var files"
+      ansible.builtin.copy:
+        content: |
+          max_rd: "{{ rd_output.stdout[0] | rd_max }}"
+          max_import_rt: "{{ import_rt.stdout[0] | rt_max }}"
+          max_export_rt: "{{ export_rt.stdout[0] | rt_max }}"
+          max_rt: "{{ [import_rt.stdout[0] | rt_max, export_rt.stdout[0] | rt_max] | max }}"
+        dest: ./vars/rd-rt_vars.yml
+        mode: '0754'
+      delegate_to: localhost
+      tags: l3vpn

@@ -1,0 +1,58 @@
+---
+- name: "PLAY-1: L3VPN Deployment unittesting"
+  hosts: PE1
+  gather_facts: false
+  vars_files:
+    - ./vars/prompt_vars.yml
+    - ./vars/rd-rt_vars.yml
+  tasks:
+    - name: "TASK-0: get the matching vrf name if any"
+      cisco.iosxr.iosxr_command:
+        commands:
+          - sh running-config vrf | utility egrep {{ vrf_name }}
+      register: vrf_output
+
+    - name: "TASK-0.1: get the matching rd value if any"
+      cisco.iosxr.iosxr_command:
+        commands:
+          - sh vrf all | utility egrep {{ rid }}:{{ (max_rd | int) + 1 }}
+      register: rd_output
+
+    - name: "TASK-1: Validate VRF name"
+      ansible.builtin.assert:
+        that:
+          - vrf_name is match('^[a-zA-Z-_]+$')
+        fail_msg: "Invalid vrf name {{ vrf_name }}. it should contain only aplhabets, hyphen, and underscore"
+
+    - name: "TASK-2: Validate that assigned VRF name doesn't exist"
+      ansible.builtin.assert:
+        that:
+          - "'' in vrf_output.stdout"
+        fail_msg: "vrf {{ vrf_name }} already exists"
+
+    - name: "TASK-3: Validate that assigned RD doesn't exist"
+      ansible.builtin.assert:
+        that:
+          - "'' in rd_output.stdout"
+        fail_msg: "rd {{ rid }}:{{ (max_rd | int) + 1 }} already exists"
+
+    - name: "TASK-4: Validate number of import rt values used"
+      ansible.builtin.assert:
+        that:
+          - (import_times | int) > 0
+          - (import_times | int) < 4
+        fail_msg: "number of import rt values used beyond the limit"
+
+    - name: "TASK-5: Validate number of export rt values used"
+      ansible.builtin.assert:
+        that:
+          - (export_times | int) > 0
+          - (export_times | int) < 4
+        fail_msg: "number of export rt values used beyind the limit"
+
+    - name: "TASK-6: Validate Customer as falls within the Prvate AS number range"
+      ansible.builtin.assert:
+        that:
+          - (cust_as | int) > 64511
+          - (cust_as | int) < 65536
+        fail_msg: "Customer AS number should be within 64512-65535 private AS range"

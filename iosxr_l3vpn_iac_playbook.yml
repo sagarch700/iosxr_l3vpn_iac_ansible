@@ -1,0 +1,34 @@
+---
+- name: "PLAY-1: L3VPN Deployment using Ansible"
+  hosts: PE1
+  gather_facts: false
+  vars_files:
+    - ./vars/prompt_vars.yml
+    - ./vars/rd-rt_vars.yml
+  tasks:
+    - name: "TASK-1: Generate L3VPN text from jinja template to check for proper configuration generation"
+      ansible.builtin.template:
+        src: templates/l3vpn.j2
+        dest: outputs/{{ inventory_hostname }}.txt
+        mode: '0754'
+      notify: test
+      delegate_to: localhost
+
+    - name: "TASK-2: Send configuration to device"
+      cisco.iosxr.iosxr_config:
+        src: templates/l3vpn.j2
+      notify: config_changed
+      register: cli_result
+
+  handlers:
+    - name: "Display Configuration done on PE routers"
+      listen: config_changed
+      ansible.builtin.debug:
+        msg: "{{ cli_result.commands }}"
+
+    - name: "Update the ref_node ip to the last node where changes done"
+      listen: test
+      ansible.builtin.lineinfile:
+        path: ./host_vars/ref_node.yml
+        regexp: '^ansible_host: .*'
+        line: 'ansible_host: {{ ansible_host }}'

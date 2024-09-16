@@ -1,0 +1,36 @@
+---
+- name: "PLAY-1: Get L3VPN Deployment values needed from prompt"
+  hosts: localhost
+  gather_facts: false
+  vars_files:
+    - ./vars/rd-rt_vars.yml
+  vars_prompt:
+    - name: "vrf_name"
+      prompt: "Enter the VRF name (alphabets, hyphen, and underscore only)"
+      private: false
+
+    - name: "import_times"
+      prompt: "How many import rt values needed(min 1 - max 3)"
+      private: false
+      default: '1'
+
+    - name: "export_times"
+      prompt: "How many export rt values needed(min 1 - max 3)"
+      private: false
+      default: '1'
+
+    - name: "cust_as"
+      prompt: "Enter the Customer AS number"
+      private: false
+
+  tasks:
+    - name: "TASK-1: Store variables in var files"
+      ansible.builtin.copy:
+        content: |
+          vrf_name: "{{ vrf_name | upper }}"
+          import_times: "{{ import_times }}"
+          export_times: "{{ export_times }}"
+          cust_as: "{{ cust_as }}"
+          bgp_password: "{{ "" | bgp_password }}"
+        dest: ./vars/prompt_vars.yml
+        mode: '0754'
