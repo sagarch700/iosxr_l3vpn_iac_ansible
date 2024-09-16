@@ -1,6 +1,6 @@
 ---
 - name: "PLAY-1: L3VPN Deployment using Ansible"
-  hosts: PE1
+  hosts: PE1, PE2
   gather_facts: false
   vars_files:
     - ./vars/prompt_vars.yml
